@@ -1,24 +1,44 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import ButtonStuff from './button.js';
+import { StateProvider } from './state.js';
 
 const ShowText = () => {
   return <Text style={styles.instructions}>K Woodall Calculator</Text>
 }
 
 export default function App() {
-  return (
-    <View style={styles.container}>
+  const initialState = {
+    theme: { primary: 'green', msg: 'Ready for calculation' }
+  };
 
-      <View style={styles.topchild}>
-        <ShowText />
+  const reducer = (state, action) => {
+    console.log("action " + action);
+    console.log("reducer");
+    switch (action.type) {
+      case 'changeTheme':
+        return {
+          ...state,
+          theme: action.newTheme
+        };
+      default:
+        return state;
+    }
+  };
+  return (
+    <StateProvider initialState={initialState} reducer={reducer}>
+      <View style={styles.container}>
+        <View style={styles.topchild}>
+          <ShowText />
+        </View>
+        <View style={styles.child}>
+          <ButtonStuff />
+        </View>
+        <View style={styles.nextchild}>
+
+        </View>
       </View>
-      <View style={styles.child}>
-        <ButtonStuff />
-      </View>
-      <View style={styles.nextchild}>
-      </View>
-    </View>
+    </StateProvider>
   )
 }
 
@@ -57,3 +77,5 @@ const styles = StyleSheet.create({
   }
 });
 
+
+//Current color is: <Text>{state.currentColor}</Text>

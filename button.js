@@ -1,11 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useReducer, useContext } from 'react';
 import { Platform, StyleSheet, Text, View, Button, TextInput, Alert, TouchableOpacity } from 'react-native';
 import NumericInput from 'react-native-numeric-input';
 import { ToastAndroid } from 'react-native';
+import { useStateValue } from './state';
+
+const ThemedButton = () => {
+    const [{ theme }, dispatch] = useStateValue();
+    console.log("ThemeButtonColor " + theme.primary);
+    console.log("ThemeMessage " + theme.msg);
+
+    return (
+        <TouchableOpacity
+            style={styles.SubmitButtonStyle}
+            activeOpacity={.5}
+            onPress={() => showItAgain(theme, dispatch)}
+        >
+            <Text> {theme.msg}</Text>
+        </TouchableOpacity >
+    )
+}
+const showItAgain = async (theme, dispatch) => {
+    //const [{ theme }, dispatch] = useStateValue();
+    console.log("show color " + theme.primary);
+    console.log("show message " + theme.msg);
+
+    await dispatch({ type: 'changeTheme', newTheme: { primary: 'blue', msg: "updated message" } })
+    console.log("show message " + theme.msg);
+    //setFormulaValue(theme.msg);
+}
 
 export default function ButtonStuff() {
+
     const [textValue, setTextValue] = useState('');
     const [formulaValue, setFormulaValue] = useState('');
+    const [{ theme }, dispatch] = useStateValue();
+    console.log("ButtonStuff ThemeMessage " + theme.msg);
+
+    const showMessage = async (message) => {
+        await dispatch({ type: 'changeTheme', newTheme: { primary: 'blue', msg: message } })
+        console.log("show message " + theme.msg);
+    }
 
     const calc = () => {
         let n = textValue;
@@ -13,8 +47,9 @@ export default function ButtonStuff() {
             let tot = eval(n);
             setTextValue(tot.toString());
             setFormulaValue(n);
+            showMessage("");
         } catch (e) {
-            ToastAndroid.show('invalid format', ToastAndroid.SHORT);
+            ToastAndroid.show('Invalid Format', ToastAndroid.SHORT);
         }
     }
     const updateTextValue = async (text) => {
@@ -47,6 +82,7 @@ export default function ButtonStuff() {
     const attachClear = () => {
         setTextValue('');
         setFormulaValue('');
+        showMessage("Message Cleared");
     }
     const GetTextInput = () => {
         let g = textValue.toString();
@@ -144,7 +180,10 @@ export default function ButtonStuff() {
                 </TouchableOpacity>
             </View>
             <View>
-                <Text style={styles.FormulaButtonStyle}> {formulaValue}</Text>
+                <Text style={styles.FormulaButtonStyle}> {formulaValue} {theme.msg}</Text>
+            </View>
+            <View>
+
             </View>
         </View>
     );
@@ -230,8 +269,27 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#fff'
     },
+    SubmitButtonStyle2: {
+        marginTop: 10,
+        marginBottom: 10,
+        paddingTop: 5,
+        paddingBottom: 15,
+        marginLeft: 30,
+        marginRight: 30,
+        backgroundColor: 'red',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#fff'
+    },
     TextStyle: {
         color: 'black',
+        textAlign: 'center',
+        fontSize: 18,
+        fontWeight: '500'
+    },
+    TextStyle2: {
+        color: 'blue',
+        //color: theme.primary,
         textAlign: 'center',
         fontSize: 18,
         fontWeight: '500'
@@ -242,4 +300,111 @@ const styles = StyleSheet.create({
         backgroundColor: '#03fc3d',
     },
 });
+
+/*
+onPress={() => attachClear()}
+<ThemedButton />
+//onPress={() => dispatch({
+//    type: 'changeTheme',
+//    newTheme: { primary: 'blue', msg: 'color changed' }
+//})}
+//<Text style="color:theme.primary">Change color {theme.msg}</Text>
+
+//<Text style={styles.TextStyle2}> Change color</Text>
+//onPress={() => showIt(theme.primary)}
+
+//onClick={() => dispatch({
+//    type: 'changeTheme',
+//    newTheme: { primary: 'blue' }
+//})}
+
+
+//const globalState = useContext(store);
+    //const { dispatch } = globalState;
+    //dispatch({ type: 'action description' })
+    //console.log("showState state is " + globalState.state);
+
+
+    //if (globalState.state != null) {
+    //    console.log("showState state is " + globalState.state);
+    //    setFormulaValue(globalState.state);
+    //}
+            <TouchableOpacity
+                style={styles.SubmitButtonStyle2}
+                activeOpacity={.5}
+                onClick={() => dispatch({
+                    type: 'changeTheme',
+                    newTheme: { primary: 'blue' }
+                })}
+            >
+                <Text style={styles.TextStyle}> Change color</Text>
+            </TouchableOpacity>
+        );
+
+
+<Button
+    primaryColor={theme.primary}
+    title="Press Me"
+    onClick={() => dispatch({
+        type: 'changeTheme',
+        newTheme: { primary: 'green' }
+    })}
+>
+    Press me
+        </Button>
+
+
+    <Button
+        primaryColor={theme.primary}
+        title="Doit"
+        onClick={() => dispatch({
+            type: 'changeTheme',
+            newTheme: { primary: 'green' }
+        })}
+    >
+        Make me blue!
+    </Button>
+const showState = () => {
+    console.log("here again");
+    const globalState = useContext(store);
+    const { dispatch } = globalState;
+
+    dispatch({ type: 'action description' })
+    console.log("showState state is " + globalState.state);
+    return globalState.state;
+}
+* /
+function init(initialCount) {
+    return { count: initialCount };
+}
+
+function reducer(state, action) {
+    switch (action.type) {
+        case 'increment':
+            return { count: state.count + 1 };
+        case 'decrement':
+            return { count: state.count - 1 };
+        case 'reset':
+            return init(action.payload);
+        default:
+            throw new Error();
+    }
+}
+
+function Counter({ initialCount }) {
+    const [state, dispatch] = useReducer(reducer, initialCount, init);
+    return (
+        <View>
+            <Text> Count: {state.count} </Text>
+            <button
+                onClick={() => dispatch({ type: 'reset', payload: initialCount })}>
+
+                <Text> Reset  </Text>
+            </button>
+            <button onClick={() => dispatch({ type: 'decrement' })}>-</button>
+            <button onClick={() => dispatch({ type: 'increment' })}>+</button>
+        </View>
+    );
+}
+*/
 
